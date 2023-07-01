@@ -1,0 +1,19 @@
+* {
+    box-sizing: border-box;
+    margin: 4px;
+}
+
+#productos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tarjetasPetshop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 8px;
+    border-style: solid;
+    border-color: orange;
+}
