@@ -7,6 +7,7 @@
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    background-color: rgb(158, 155, 155);
 }
 
 .tarjetasPetshop {
@@ -16,4 +17,5 @@
     border-radius: 8px;
     border-style: solid;
     border-color: orange;
+    background-color: white;
 }
