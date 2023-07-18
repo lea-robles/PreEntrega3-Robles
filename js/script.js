@@ -1,3 +1,5 @@
+function programaPrincipal() {
+
 let productos = [
     { id: 3, nombre: "alimento de gato x 1kg", categoria: "alimentos", stock: 9, precio: 1000, rutaImagen: "alimento-gato.webp" },
     { id: 5, nombre: "alimento de perro x 1kg", categoria: "alimentos", stock: 7, precio: 1300, rutaImagen: "alimento-perro.webp" },
@@ -18,61 +20,81 @@ if (carritoJSON) {
     carrito = carritoJSON
 }
 
-crearTarjetas(productos)
-crearTarjetasCarrito()
-
-
-function crearTarjetas(array) {
-    contenedorTarjetas.innerHTML = ""
-    for (const producto of array) {
-        let tarjeta = document.createElement("div")
-        tarjeta.className = "tarjetasPetshop"
-        tarjeta.innerHTML = `
-            <h4>${producto.nombre}</h4>
-            <img src="./img/${producto.rutaImagen}">
-            <h4>$${producto.precio}</h4>
-            <button id=${producto.id}>Agregar al carrito</button>
-        `
-        contenedorTarjetas.appendChild(tarjeta)
-        let botonAgregarCarrito = document.getElementById(producto.id)
-        botonAgregarCarrito.addEventListener("click", agregarAlCarrito)
-    }
-}
+crearTarjetas(productos, contenedorTarjetas, carrito)
+crearTarjetasCarrito(carrito)
 
 let buscarProductos = document.getElementById("buscarProductos")
-buscarProductos.addEventListener("input", filtrarPorNombre)
+buscarProductos.addEventListener("input", () => filtrarPorNombre(productos, contenedorTarjetas, carrito))
 
 let botonesCategorias = document.getElementsByClassName("filtroCategorias")
 for (const botonCategorias of botonesCategorias) {
-    botonCategorias.addEventListener("click", filtrarPorCategoria)
-}
-
-function filtrarPorNombre() {
-    let arrayFiltrado = productos.filter(producto => producto.nombre.toLowerCase().includes(buscarProductos.value.toLowerCase()))
-    crearTarjetas(arrayFiltrado)
-}
-
-function filtrarPorCategoria(e) {
-    if (e.target.value === "quitar") {
-        crearTarjetas(productos)
-    } else {
-        let arrayFiltrado = productos.filter(producto => producto.categoria === e.target.value)
-        crearTarjetas(arrayFiltrado)
-    }
+    botonCategorias.addEventListener("click", (e) => filtrarPorCategoria(e, contenedorTarjetas, carrito, productos, botonFinalizarCompra))
 }
 
 let botonCarrito = document.getElementById("botonCarrito")
-botonCarrito.addEventListener("click", ocultarCarrito)
+botonCarrito.addEventListener("click", () => verCarrito(contenedorTarjetas, botonFinalizarCompra))
 
-function ocultarCarrito() {
+let botonVaciarCarrito = document.getElementById("botonVaciarCarrito")
+botonVaciarCarrito.addEventListener("click", vaciarCarrito)
+
+let botonFinalizarCompra = document.getElementById("finalizarCompra")
+botonFinalizarCompra.addEventListener("click", vaciarCarrito)
+
+}
+
+programaPrincipal()
+
+
+
+function crearTarjetas(arrayFiltrado, contenedorTarjetas, carrito) {
+    contenedorTarjetas.innerHTML = ""
+    arrayFiltrado.forEach (({ nombre, rutaImagen, precio, id}) => {
+        let tarjeta = document.createElement("div")
+        tarjeta.className = "tarjetasPetshop"
+        tarjeta.innerHTML = `
+            <h4>${nombre}</h4>
+            <img src="./img/${rutaImagen}">
+            <h4>$${precio}</h4>
+            <button id=${id}>Agregar al carrito</button>
+        `
+        contenedorTarjetas.appendChild(tarjeta)
+        let botonAgregarCarrito = document.getElementById(id)
+        botonAgregarCarrito.addEventListener("click", () => agregarAlCarrito(arrayFiltrado, id, carrito))
+    })
+}
+
+function filtrarPorNombre(productos, contenedorTarjetas, carrito) {
+    let arrayFiltrado = productos.filter(producto => producto.nombre.toLowerCase().includes(buscarProductos.value.toLowerCase()))
+    crearTarjetas(arrayFiltrado, contenedorTarjetas, carrito)
+}
+
+function filtrarPorCategoria(e, contenedorTarjetas, carrito, productos, botonFinalizarCompra) {
+    ocultarCarrito(contenedorTarjetas, botonFinalizarCompra)
+    if (e.target.value === "quitar") {
+        crearTarjetas(productos, contenedorTarjetas, carrito)
+    } else {
+        let arrayFiltrado = productos.filter(producto => producto.categoria === e.target.value)
+        crearTarjetas(arrayFiltrado, contenedorTarjetas, carrito)
+    }
+}
+
+function verCarrito(contenedorTarjetas, botonFinalizarCompra) {
     let carrito = document.getElementById("carrito")
     contenedorTarjetas.classList.toggle("ocultar")
     carrito.classList.toggle("ocultar")
     botonFinalizarCompra.classList.toggle("ocultar")
 }
 
-function agregarAlCarrito(e) {
-    let productoElegido = productos.find(producto => producto.id === Number(e.target.id))
+function ocultarCarrito(contenedorTarjetas, botonFinalizarCompra) {
+    let carrito = document.getElementById("carrito")
+    contenedorTarjetas.classList.remove("ocultar")
+    carrito.classList.add("ocultar")
+    botonFinalizarCompra.classList.add("ocultar")
+}
+
+function agregarAlCarrito(arrayFiltrado, id, carrito) {
+    console.log(id)
+    let productoElegido = arrayFiltrado.find(producto => producto.id === id)
     let posPproductoEnCarrito = carrito.findIndex(producto => producto.id === productoElegido.id)
     if (posPproductoEnCarrito !== -1) {
         carrito[posPproductoEnCarrito].unidades++
@@ -86,11 +108,11 @@ function agregarAlCarrito(e) {
             subTotal: productoElegido.precio
         })
     }
-    crearTarjetasCarrito()
+    crearTarjetasCarrito(carrito)
     localStorage.setItem("carrito", JSON.stringify(carrito))
 }
 
-function crearTarjetasCarrito() {
+function crearTarjetasCarrito(carrito) {
     let total = 0
     let crearEnCarrito = document.getElementById("carrito")
     crearEnCarrito.innerHTML = ""
@@ -105,14 +127,8 @@ function crearTarjetasCarrito() {
         `
 }
 
-let botonVaciarCarrito = document.getElementById("botonVaciarCarrito")
-botonVaciarCarrito.addEventListener("click", vaciarCarrito)
-
-let botonFinalizarCompra = document.getElementById("finalizarCompra")
-botonFinalizarCompra.addEventListener("click", vaciarCarrito)
-
 function vaciarCarrito() {
     carrito = []
     localStorage.removeItem("carrito")
-    crearTarjetasCarrito()
+    crearTarjetasCarrito(carrito)
 }
