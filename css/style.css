@@ -1,6 +1,6 @@
 * {
     box-sizing: border-box;
-    margin: 4px;
+    margin: 2px;
 }
 
 #productos {
@@ -24,6 +24,11 @@
     padding: 4px;
 }
 
+.header{
+    background-color: #ffa500;
+    padding: 5px;
+}
+
 .tarjetasFlex {
     display: flex;
     justify-content: center;
@@ -35,10 +40,33 @@
     align-items: center;
     border-radius: 8px;
     border-style: solid;
-    border-color: orange;
-    background-color: white;
+    border-color: #ffa500;
+    background-color: #ffffff;
 }
 
 .ocultar {
     display: none;
 }
+
+/* SWEETALERT */
+
+.botonConfirmModal {
+    background-color: #ffa500 !important;
+}
+
+.botonConfirmModal :active {
+    color: #000000 !important;
+}
+
+.swal2-confirm:focus {
+    box-shadow: none !important;
+}
+
+ /* TOASTIFY */
+
+.notiToastify {
+    border-color: #000000 ;
+    border-width: 2px;
+    border-style: solid;
+}
+

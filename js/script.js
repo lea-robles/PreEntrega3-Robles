@@ -1,54 +1,58 @@
 function programaPrincipal() {
 
-let productos = [
-    { id: 3, nombre: "alimento de gato x 1kg", categoria: "alimentos", stock: 9, precio: 1000, rutaImagen: "alimento-gato.webp" },
-    { id: 5, nombre: "alimento de perro x 1kg", categoria: "alimentos", stock: 7, precio: 1300, rutaImagen: "alimento-perro.webp" },
-    { id: 6, nombre: "collar de gato", categoria: "accesorios", stock: 2, precio: 700, rutaImagen: "collar-gato.webp" },
-    { id: 8, nombre: "collar de perro", categoria: "accesorios", stock: 1, precio: 900, rutaImagen: "collar-perro.webp" },
-    { id: 11, nombre: "piedras sanitarias x 1kg", categoria: "higiene", stock: 5, precio: 400, rutaImagen: "piedras-sanitarias.webp" },
-    { id: 13, nombre: "ratón de plástico", categoria: "juguetes", stock: 4, precio: 400, rutaImagen: "ratas-panio.webp" },
-    { id: 15, nombre: "pelota de tenis", categoria: "juguetes", stock: 6, precio: 500, rutaImagen: "pelota-tenis.webp" },
-    { id: 17, nombre: "hueso de cuero", categoria: "juguetes", stock: 5, precio: 600, rutaImagen: "hueso-cuero.webp" },
-    { id: 19, nombre: "rascador para gatos", categoria: "juguetes", stock: 2, precio: 1800, rutaImagen: "rascador-gatos.webp" },
-]
+    let productos = []
+    const urlLocal = "../productos.json"
 
-let carrito = []
-let carritoJSON = JSON.parse(localStorage.getItem("carrito"))
-let contenedorTarjetas = document.getElementById("productos")
+    fetch(urlLocal)
+        .then(response => response.json())
+        .then(data => {
+            productos = data.productos
+            crearTarjetas(productos, contenedorTarjetas, carrito)
+        })
+        .catch(error => modal("error", "Ha ocurrido un error al cargar los productos", "Por favor intentelo nuevamente mas tarde"))
 
-if (carritoJSON) {
-    carrito = carritoJSON
-}
+    let carrito = []
+    let carritoJSON = JSON.parse(localStorage.getItem("carrito"))
+    let contenedorTarjetas = document.getElementById("productos")
 
-crearTarjetas(productos, contenedorTarjetas, carrito)
-crearTarjetasCarrito(carrito)
+    if (carritoJSON) {
+        carrito = carritoJSON
+    }
 
-let buscarProductos = document.getElementById("buscarProductos")
-buscarProductos.addEventListener("input", () => filtrarPorNombre(productos, contenedorTarjetas, carrito))
+    crearTarjetasCarrito(carrito)
 
-let botonesCategorias = document.getElementsByClassName("filtroCategorias")
-for (const botonCategorias of botonesCategorias) {
-    botonCategorias.addEventListener("click", (e) => filtrarPorCategoria(e, contenedorTarjetas, carrito, productos, botonFinalizarCompra))
-}
+    // INPUT
 
-let botonCarrito = document.getElementById("botonCarrito")
-botonCarrito.addEventListener("click", () => verCarrito(contenedorTarjetas, botonFinalizarCompra))
+    let buscarProductos = document.getElementById("buscarProductos")
+    buscarProductos.addEventListener("input", () => filtrarPorNombre(productos, contenedorTarjetas, carrito))
 
-let botonVaciarCarrito = document.getElementById("botonVaciarCarrito")
-botonVaciarCarrito.addEventListener("click", vaciarCarrito)
+    // BOTONES
 
-let botonFinalizarCompra = document.getElementById("finalizarCompra")
-botonFinalizarCompra.addEventListener("click", vaciarCarrito)
+    let botonesCategorias = document.getElementsByClassName("filtroCategorias")
+    for (const botonCategorias of botonesCategorias) {
+        botonCategorias.addEventListener("click", (e) => filtrarPorCategoria(e, contenedorTarjetas, carrito, productos, botonFinalizarCompra))
+    }
+
+    let botonCarrito = document.getElementById("botonCarrito")
+    botonCarrito.addEventListener("click", () => verCarrito(contenedorTarjetas, botonFinalizarCompra))
+
+    let botonVaciarCarrito = document.getElementById("botonVaciarCarrito")
+    botonVaciarCarrito.addEventListener("click", () => vaciarCarrito(carrito))
+
+    let botonFinalizarCompra = document.getElementById("finalizarCompra")
+    botonFinalizarCompra.addEventListener("click", () => finalizarCompra(carrito))
 
 }
 
 programaPrincipal()
 
 
+// FUNCIONES
+
 
 function crearTarjetas(arrayFiltrado, contenedorTarjetas, carrito) {
     contenedorTarjetas.innerHTML = ""
-    arrayFiltrado.forEach (({ nombre, rutaImagen, precio, id}) => {
+    arrayFiltrado.forEach(({ nombre, rutaImagen, precio, id }) => {
         let tarjeta = document.createElement("div")
         tarjeta.className = "tarjetasPetshop"
         tarjeta.innerHTML = `
@@ -110,6 +114,7 @@ function agregarAlCarrito(arrayFiltrado, id, carrito) {
     }
     crearTarjetasCarrito(carrito)
     localStorage.setItem("carrito", JSON.stringify(carrito))
+    notiToast("Producto añadido al carrito", 1400)
 }
 
 function crearTarjetasCarrito(carrito) {
@@ -127,8 +132,49 @@ function crearTarjetasCarrito(carrito) {
         `
 }
 
-function vaciarCarrito() {
-    carrito = []
+function vaciarCarrito(carrito) {
+    carrito.splice(0, carrito.length)
     localStorage.removeItem("carrito")
     crearTarjetasCarrito(carrito)
+}
+
+function finalizarCompra(carrito) {
+    if (calcularTotal(carrito) === 0) {
+        modal('error', 'El carrito está vacío', 'Agregue productos antes de finalizar la compra.')
+    } else {
+        vaciarCarrito(carrito)
+        modal('success', 'Compra realizada con exito!', 'Gracias por elegirnos!')
+    }
+    console.log(carrito)
+}
+
+function calcularTotal(carrito) {
+    carrito = carrito || [];
+    return carrito.reduce((total, producto) => total + producto.subTotal, 0);
+}
+
+// LIBRERIA
+
+function notiToast(text, duration) {
+    Toastify({
+        text,
+        duration,
+        className: "notiToastify",
+        style: {
+            background: "linear-gradient(to right, #ffa500, #ffd500)",
+            color: "#000000",
+        },
+        stopOnFocus: false,
+    }).showToast();
+}
+
+function modal(icon, title, text) {
+    Swal.fire({
+        icon,
+        title,
+        text,
+        customClass: {
+            confirmButton: "botonConfirmModal",
+        }
+    })
 }
