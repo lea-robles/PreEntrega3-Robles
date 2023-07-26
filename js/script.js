@@ -6,7 +6,7 @@ function programaPrincipal() {
     fetch(urlLocal)
         .then(response => response.json())
         .then(data => {
-            productos = data.productos
+            productos = data
             crearTarjetas(productos, contenedorTarjetas, carrito)
         })
         .catch(error => modal("error", "Ha ocurrido un error al cargar los productos", "Por favor intentelo nuevamente mas tarde"))
